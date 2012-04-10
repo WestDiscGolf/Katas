@@ -1,67 +1,45 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Algorithm
 {
     public class Finder
     {
-        private readonly List<Thing> _p;
+        private readonly List<Person> _people;
 
-        public Finder(List<Thing> p)
+        private readonly Dictionary<ResultType, Func<IEnumerable<Result>, Result>> _dictionary = new Dictionary<ResultType, Func<IEnumerable<Result>, Result>>
+                                                                                         {
+                                                                                             { ResultType.Closest, Closest },
+                                                                                             { ResultType.Furthest, Furthest }
+                                                                                          };
+
+        public Finder(List<Person> people)
         {
-            _p = p;
+            _people = people;
         }
 
-        public F Find(FT ft)
+        public Result Find(ResultType resultType)
         {
-            var tr = new List<F>();
+            var results = new List<Result>();
 
-            for(var i = 0; i < _p.Count - 1; i++)
+            foreach (var person in _people)
             {
-                for(var j = i + 1; j < _p.Count; j++)
-                {
-                    var r = new F();
-                    if(_p[i].BirthDate < _p[j].BirthDate)
-                    {
-                        r.P1 = _p[i];
-                        r.P2 = _p[j];
-                    }
-                    else
-                    {
-                        r.P1 = _p[j];
-                        r.P2 = _p[i];
-                    }
-                    r.D = r.P2.BirthDate - r.P1.BirthDate;
-                    tr.Add(r);
-                }
+                Person person1 = person;
+                results.AddRange(_people.Where(x => !x.Equals(person1)).Select(other => new Result { PersonOne = person1, PersonTwo = other }));
             }
 
-            if(tr.Count < 1)
-            {
-                return new F();
-            }
+            return results.Any() ? _dictionary[resultType](results) : new Result();
+        }
 
-            F answer = tr[0];
-            foreach(var result in tr)
-            {
-                switch(ft)
-                {
-                    case FT.One:
-                        if(result.D < answer.D)
-                        {
-                            answer = result;
-                        }
-                        break;
+        private static Result Closest(IEnumerable<Result> results)
+        {
+            return results.OrderBy(x => x.GetDelta()).First();
+        }
 
-                    case FT.Two:
-                        if(result.D > answer.D)
-                        {
-                            answer = result;
-                        }
-                        break;
-                }
-            }
-
-            return answer;
+        private static Result Furthest(IEnumerable<Result> results)
+        {
+            return results.OrderBy(x => x.GetDelta()).Last();
         }
     }
 }
