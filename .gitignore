@@ -4,6 +4,10 @@
 build/
 [Bb]in/
 [Oo]bj/
+target/
+.project
+.settings/
+.classpath
 *.suo
 *.sln.cache
 _ReSharper.*/
@@ -35,3 +39,6 @@ log.txt
 *.mov
 .idea
 .DS_Store
+*.sdf
+packages/
+TestResults/
